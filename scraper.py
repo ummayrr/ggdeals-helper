@@ -3,9 +3,14 @@ import requests
 import lxml
 
 gameName = input("Enter the game name: ")
+
+#basic concatenation for game URL
+
 gameNameLower = gameName.lower()
 
 gameNameLower = gameNameLower.replace("'s"," s ")
+gameNameLower = gameNameLower.replace(':','')
+gameNameLower = gameNameLower.replace('-','')
 
 splitted = gameNameLower.split()
 listLength = len(splitted)
@@ -22,20 +27,20 @@ for i in range(listLength):
 updatedListLength = len(splitted)
 gameNameWithDashes = ''.join(splitted)
 
+#create request to the URL 
+
 print("\n")
 url = "https://gg.deals/game/" + gameNameWithDashes
-print (url)
-print("\n")
 
 response = requests.get(url)
+
+#soup
 
 soup = BeautifulSoup(response.text, 'lxml')
 
 for data in soup.findAll('span',{'class':'price-inner numeric'}):
     if('~' in data.text):
-        print(gameName + " - Lowest: " + data.text)
+        lowest = data.text
+        lowest = lowest.replace('~','')
+        print(gameName + ": " + lowest + "\n")
         break
-
-
-for data in soup.findAll('span',{'class':'price-inner game-price-current'}):
-    print(data.text)

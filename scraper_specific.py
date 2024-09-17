@@ -34,6 +34,8 @@ gameName = input("Enter the game name: ")
 gameNameLower = gameName.lower()
 
 gameNameLower = gameNameLower.replace("'s"," s ")
+gameNameLower = gameNameLower.replace(':','')
+gameNameLower = gameNameLower.replace('-','')
 
 splitted = gameNameLower.split()
 listLength = len(splitted)
@@ -113,7 +115,7 @@ if response.status_code != 200:
 
 #soup 
 
-soup = BeautifulSoup(response.text, 'html.parser')
+soup = BeautifulSoup(response.text, 'lxml')
 
 #kinguin div
 
