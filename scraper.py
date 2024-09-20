@@ -164,7 +164,11 @@ def driver(inputName):
 
 if(os.path.isfile('results.txt')):
  os.remove('results.txt')
+
 with open('names.txt','r') as f:
-    for line in f:
-        driver(line.rstrip())
+    try:
+        for line in f:
+                    driver(line.rstrip())
+    except Exception as e:
+         print(f"Exception occured: {e}")
         

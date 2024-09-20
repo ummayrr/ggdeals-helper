@@ -144,10 +144,16 @@ def test4(gameName):                            ### Dark Souls 3 to Dark Souls I
     return gameName
 
 def makeRequest (gameName):
-    url = "https://gg.deals/game/" + gameName
-    print(url)
-    response = requests.get(url)
-    return response
+    try:
+       url = "https://gg.deals/game/" + gameName
+#      print(url)
+       response = requests.get(url,timeout=10)
+       response.raise_for_status() 
+       return response
+    except requests.exceptions.RequestException as e:
+       print(f"Request failed: {e}")
+       return None
+
 
 def initialSoup (response):                      #required for getting gameID mainly
     soup = BeautifulSoup(response.text, 'lxml')
@@ -200,7 +206,6 @@ def findGameID (soup1):                        #finding gameID for post request,
 
 
 def kinguinExtractor(soup1, soup2, inputNameForDisplay):                  ### soup 1 is only passed to pass into final function
-
     
     #kinguin div
 
@@ -223,7 +228,6 @@ def kinguinExtractor(soup1, soup2, inputNameForDisplay):                  ### so
     #list gets all 3 values, in list[0],[1],[2]
 
     list_.sort()
-
     c = CurrencyConverter()
     kinguinPriceFormatted = list_[1].replace('$','')
 
@@ -242,10 +246,16 @@ def kinguinExtractor(soup1, soup2, inputNameForDisplay):                  ### so
          
 def printer(inputNameForDisplay, lowestPrice, lowestOnKinguin, iwtrFinal):          ## printing all output
     with open('results.txt','a') as f:
+        #### print to file ####
      print(inputNameForDisplay + ":", file = f)
      print("Lowest overall: " + lowestPrice, file = f)
      print("Lowest on Kinguin: " + lowestOnKinguin, file = f)
-     print("IWTR: " + iwtrFinal + "\n", file = f)   
+     print("IWTR: " + iwtrFinal + "\n", file = f)  
+        #### print to console #### 
+     print(inputNameForDisplay + ":")
+     print("Lowest overall: " + lowestPrice)
+     print("Lowest on Kinguin: " + lowestOnKinguin)
+     print("IWTR: " + iwtrFinal + "\n")  
 
 def final(soup1, inputNameForDisplay, lowestOnKinguin, iwtrFinal):      ## finds lowest price overall, and passes to print function everything
     lowestPrice = ''
@@ -269,7 +279,10 @@ def driver(inputName):                                             ### main driv
            response = makeRequest(test3(inputName))
            if (response.status_code == 404):
             response = makeRequest(test4(inputName))
-    
+            if not response or response.status_code == 404:
+             print(f"Could not find the game: {inputNameForDisplay}\n")
+             return
+
     soup1 = initialSoup(response)
     secondSoup = findGameID(soup1)
     kinguinExtractor(soup1, secondSoup, inputNameForDisplay)
@@ -280,5 +293,10 @@ if(os.path.isfile('results.txt')):
  os.remove('results.txt')
 
 with open('names.txt','r') as f:
-  for line in f:
-    driver(line.rstrip())
+   for line in f:
+       try:
+            driver(line.rstrip())
+       except IndexError:
+            print(f"Could not find a listing for {line.rstrip()} on Kinguin.\n")
+       except Exception as e:
+           print(f"Exception occured: {e}")
