@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 import lxml
 import os
+from googlesearch import search
 
 def basicFormatting (gameName):
     gameName = gameName.replace(':','')
@@ -12,6 +13,7 @@ def basicFormatting (gameName):
     gameName = gameName.replace(')','')
     gameName = gameName.replace('!','')
     gameName = gameName.replace('.','')
+    gameName = gameName.replace('®','')
     return gameName
 
 def formatName (gameName):
@@ -57,7 +59,7 @@ def test3(gameName):                            ### The Darkness II to The Darkn
     count = 0
 
     if index == 0:
-        return gameName
+        return ''
 
 
     for i in testStr:
@@ -96,7 +98,7 @@ def test4(gameName):                            ### Dark Souls 3 to Dark Souls I
         i+=1
 
     if (testInt == 0):
-        return gameName
+        return ''
 
     romanStr = ""
 
@@ -118,16 +120,22 @@ def test4(gameName):                            ### Dark Souls 3 to Dark Souls I
     gameName = formatName (gameName)
     return gameName
 
-def makeRequest (gameName):
+def test5(gameName):                             ### search on google, make request is inside, returns response
+    query = gameName + " site: gg.deals"
     try:
+        result = search(query, 1)
+        for i in result:
+            response = requests.get(i, timeout=10)
+            return response
+    except Exception as e:
+        print(f"Exception occured while searching on Google: {e}")
+    
+
+def makeRequest (gameName):
        url = "https://gg.deals/game/" + gameName
 #      print(url)
        response = requests.get(url,timeout=10)
-       response.raise_for_status() 
        return response
-    except requests.exceptions.RequestException as e:
-     print(f"Request failed: {e}")
-     return None
 
 def makeSoup(response,inputNameForDisplay):
     soup = BeautifulSoup(response.text, 'lxml')
@@ -144,19 +152,26 @@ def makeSoup(response,inputNameForDisplay):
 def driver(inputName):
     inputNameForDisplay = inputName
     inputName = basicFormatting (inputName)
-
+    inputNameFormatted = formatName(inputName)
     #create request to the URL 
-    response = makeRequest(test1(inputName))
-    if (response.status_code == 404):
-          response = makeRequest(test2(inputName))
-          if (response.status_code == 404):
-           response = makeRequest(test3(inputName))
-           if (response.status_code == 404):
-            response = makeRequest(test4(inputName))
-            if not response or response.status_code == 404:
-             print(f"Could not find the game: {inputNameForDisplay}")
-             return
-
+    
+    response = makeRequest(inputNameFormatted)
+    
+    if (response.status_code == 404 and "'s" in inputName):
+        response = makeRequest(test1(inputName))
+        if (response.status_code == 404):
+            response = makeRequest(test2(inputName))
+            
+    test3Result = test3(inputName)
+    if(response.status_code == 404 and test3Result != ''):
+        response = makeRequest(test3Result)
+    
+    test4Result = test4(inputName)
+    if (response.status_code == 404 and test4Result != ''):
+        response = makeRequest(test4Result)
+    
+    if not response or response.status_code == 404:
+            response = test5(inputNameForDisplay)
 
     #soup
 
