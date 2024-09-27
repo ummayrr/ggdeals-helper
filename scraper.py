@@ -138,6 +138,25 @@ def test5(gameName):                             ### search on google, make requ
         print(f"Exception occured while searching on Google: {e}")
         return
 
+def test6(gameName):                             ### gg.deals native search
+    url = "https://gg.deals/search/?title=" + gameName
+    response = requests.get(url, timeout=10)
+    soup = BeautifulSoup(response.text, 'lxml')
+
+    divs = soup.findAll('div')
+
+    for div in divs:
+      linkName = div.get('data-game-name')
+      if (linkName is None):
+       continue;   
+      break
+
+    url = "https://gg.deals/game/" + linkName
+
+    response = requests.get(url, timeout=10)
+    return response
+
+
 
 def makeRequest (gameName):
        url = "https://gg.deals/game/" + gameName
@@ -179,9 +198,15 @@ def driver(inputName):
         response = makeRequest(test4Result)
     
     if not response or response.status_code == 404:
-        response = test5(inputNameForDisplay)
+        try:
+         response = test5(inputNameForDisplay)
+        except:
+            response = test6(inputNameForDisplay)
 
-
+    if not response or response.status_code == 404:
+            print("All tries to search for the game have failed. ")
+            return
+    
     makeSoup(response,inputNameForDisplay)
 
 if(os.path.isfile('results.txt')):
