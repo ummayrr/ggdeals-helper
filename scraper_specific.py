@@ -18,6 +18,7 @@ import os
 import html
 import lxml
 import re 
+import roman
 from currency_converter import CurrencyConverter
 from googlesearch import search
 
@@ -28,6 +29,7 @@ print("Lowest overall is considered with vouchers, any fees. The top one shown f
 
 gg_csrf_token = os.getenv("csrf")
 gameName = ''
+iwtrTotal = 0.0
 
 def basicFormatting (gameName):                          ### basic symbols removal
     gameName = gameName.replace(':','')
@@ -127,8 +129,7 @@ def test4(gameName):                            ### Dark Souls 3 to Dark Souls I
 
     romanStr = ""
 
-    for i in range(testInt):
-        romanStr += 'I'
+    romanStr = str(roman.toRoman(testInt))
 
     gameNameList[index] = romanStr
 
@@ -154,7 +155,8 @@ def test5(gameName):                             ### search on google, make requ
             return response
     except Exception as e:
         print(f"Exception occured while searching on Google: {e}")
-
+        return
+    
 def makeRequest (gameName):
        url = "https://gg.deals/game/" + gameName
 #      print(url)
@@ -245,7 +247,9 @@ def kinguinExtractor(soup1, soup2, inputNameForDisplay):                  ### so
     fixed35fee = c.convert(0.35, 'EUR', 'USD')
     kinguinPrice = kinguinPrice - fixed35fee
     kinguinPrice = kinguinPrice - (kinguinPrice * 0.14)         # iwtr = base price - 0.35 eur        # iwtr = iwtr - (14% of iwtr)
-
+    
+    global iwtrTotal
+    iwtrTotal += kinguinPrice
     iwtrFinal = format(kinguinPrice , '.2f') # CHANGES FLOAT NUMBER TO STRING AUTOMATICALLY, AND ROUNDING OFF by 2 DECIMAL PLACES
     iwtrFinal = '$' + iwtrFinal
     lowestOnKinguin = list_[1]
@@ -299,7 +303,11 @@ def driver(inputName):                                             ### main driv
     
     if not response or response.status_code == 404:
             response = test5(inputNameForDisplay)
-
+            
+    if not response or response.status_code == 404:
+            print("All tries to search for the game have failed. ")
+            return
+    
     soup1 = initialSoup(response)
     secondSoup = findGameID(soup1)
     kinguinExtractor(soup1, secondSoup, inputNameForDisplay)
@@ -314,6 +322,15 @@ with open('names.txt','r') as f:
        try:
             driver(line.rstrip())
        except IndexError:
-            print(f"Could not find a listing for {line.rstrip()} on Kinguin.\n")
+            with open('results.txt','a') as f:
+             print(f"Could not find a listing for {line.rstrip()} on Kinguin.\n")
+             print(f"Could not find a listing for {line.rstrip()} on Kinguin.\n", file = f)
        except Exception as e:
-           print(f"Exception occured: {e}")
+            print(f"Exception occured: {e}")
+            
+iwtrFinalStr = format(iwtrTotal , '.2f') # CHANGES FLOAT NUMBER TO STRING AUTOMATICALLY, AND ROUNDING OFF by 2 DECIMAL PLACES
+iwtrFinalStr = '$' + iwtrFinalStr
+print("IWTR Total: " + iwtrFinalStr)
+
+with open('results.txt','a') as f:
+    print("IWTR Total: " + iwtrFinalStr, file = f)

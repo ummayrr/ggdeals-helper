@@ -4,3 +4,4 @@ lxml
 dotenv
 CurrencyConverter
 googlesearch-python
+roman

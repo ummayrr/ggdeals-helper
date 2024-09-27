@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 import lxml
 import os
+import roman
 from googlesearch import search
 
 def basicFormatting (gameName):
@@ -102,8 +103,7 @@ def test4(gameName):                            ### Dark Souls 3 to Dark Souls I
 
     romanStr = ""
 
-    for i in range(testInt):
-        romanStr += 'I'
+    romanStr = str(roman.toRoman(testInt))
 
     gameNameList[index] = romanStr
 
@@ -129,11 +129,12 @@ def test5(gameName):                             ### search on google, make requ
             return response
     except Exception as e:
         print(f"Exception occured while searching on Google: {e}")
-    
+        return
+
 
 def makeRequest (gameName):
        url = "https://gg.deals/game/" + gameName
-#      print(url)
+       print(url)
        response = requests.get(url,timeout=10)
        return response
 
@@ -148,7 +149,7 @@ def makeSoup(response,inputNameForDisplay):
             with open('results.txt','a') as f:
                 print(inputNameForDisplay + ": " + lowest, file = f)
             break
-
+        
 def driver(inputName):
     inputNameForDisplay = inputName
     inputName = basicFormatting (inputName)
@@ -170,8 +171,8 @@ def driver(inputName):
     if (response.status_code == 404 and test4Result != ''):
         response = makeRequest(test4Result)
     
-    if not response or response.status_code == 404:
-            response = test5(inputNameForDisplay)
+  #  if not response or response.status_code == 404:
+        #response = test5(inputNameForDisplay)
 
     #soup
 
