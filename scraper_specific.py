@@ -79,20 +79,27 @@ def test3(gameName):                            ### The Darkness II to The Darkn
 
     for i in range(len(gameNameList)):
         testStr = gameNameList[i]
-        if ((testStr[0] == 'I' or testStr[0] == 'i') and (testStr[-1] == 'I' or testStr[-1] == 'i')):
+        if (
+            ((testStr[0] == 'I' or testStr[0] == 'i') and (testStr[-1] == 'I' or testStr[-1] == 'i')) or
+            ((testStr[0] == 'I' or testStr[0] == 'i') and (testStr[-1] == 'X' or testStr[-1] == 'x')) or
+            (testStr.lower() == 'x') or
+            (testStr[0] == 'I' or testStr[0] == 'i') or
+            (testStr[-1] == 'V' or testStr[-1] == 'v') or
+            ((testStr[0] == 'X' or testStr[0] == 'x') and (testStr[-1] == 'V' or testStr[-1] == 'v')) or
+            ((testStr[0] == 'X' or testStr[0] == 'x') and (testStr[-1] == 'I' or testStr[-1] == 'i'))
+        ):
             index = i
             break
+
 
     count = 0
 
     if index == 0:
         return ''
 
+    number = int(roman.fromRoman(gameNameList[index].upper()))
 
-    for i in testStr:
-        count = count + 1
-
-    gameNameList[index] = str(count)
+    gameNameList[index] = str(number)
 
     for i in range(len(gameNameList)):
      if(len(gameNameList) == 1):
