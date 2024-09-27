@@ -30,6 +30,7 @@ print("Lowest overall is considered with vouchers, any fees. The top one shown f
 gg_csrf_token = os.getenv("csrf")
 gameName = ''
 iwtrTotal = 0.0
+globalName = ''
 
 def basicFormatting (gameName):                          ### basic symbols removal
     gameName = gameName.replace(':','')
@@ -189,8 +190,14 @@ def makeRequest (gameName):
        return response
 
 
-def initialSoup (response):                      #required for getting gameID mainly
+def initialSoup (response):                      #required for getting gameID mainly, is also finding game name for displaying
     soup = BeautifulSoup(response.text, 'lxml')
+    
+    for data in soup.findAll('a',{'class':'game-info-title title no-icons'}):
+        global globalName
+        globalName = data.text
+        break
+    
     return soup
 
 def findGameID (soup1):                        #finding gameID for post request, (POST for the load more option, to get to kinguin if it is hidden below load more options)
@@ -239,7 +246,7 @@ def findGameID (soup1):                        #finding gameID for post request,
     return soup
 
 
-def kinguinExtractor(soup1, soup2, inputNameForDisplay):                  ### soup 1 is only passed to pass into final function
+def kinguinExtractor(soup1, soup2):                  ### soup 1 is only passed to pass into final function
     
     #kinguin div
 
@@ -278,22 +285,22 @@ def kinguinExtractor(soup1, soup2, inputNameForDisplay):                  ### so
     iwtrFinal = format(kinguinPrice , '.2f') # CHANGES FLOAT NUMBER TO STRING AUTOMATICALLY, AND ROUNDING OFF by 2 DECIMAL PLACES
     iwtrFinal = '$' + iwtrFinal
     lowestOnKinguin = list_[1]
-    final(soup1, inputNameForDisplay, lowestOnKinguin, iwtrFinal)
+    final(soup1, lowestOnKinguin, iwtrFinal)
          
-def printer(inputNameForDisplay, lowestPrice, lowestOnKinguin, iwtrFinal):          ## printing all output
+def printer(lowestPrice, lowestOnKinguin, iwtrFinal):          ## printing all output
     with open('results.txt','a') as f:
         #### print to file ####
-     print(inputNameForDisplay + ":", file = f)
+     print(globalName + ":", file = f)
      print("Lowest overall: " + lowestPrice, file = f)
      print("Lowest on Kinguin: " + lowestOnKinguin, file = f)
      print("IWTR: " + iwtrFinal + "\n", file = f)  
         #### print to console #### 
-     print(inputNameForDisplay + ":")
+     print(globalName + ":")
      print("Lowest overall: " + lowestPrice)
      print("Lowest on Kinguin: " + lowestOnKinguin)
      print("IWTR: " + iwtrFinal + "\n")  
 
-def final(soup1, inputNameForDisplay, lowestOnKinguin, iwtrFinal):      ## finds lowest price overall, and passes to print function everything
+def final(soup1, lowestOnKinguin, iwtrFinal):      ## finds lowest price overall, and passes to print function everything
     lowestPrice = ''
 
     for data in soup1.findAll('span',{'class':'price-inner numeric'}):
@@ -302,7 +309,7 @@ def final(soup1, inputNameForDisplay, lowestOnKinguin, iwtrFinal):      ## finds
             lowestPrice = lowestPrice.replace('~','')
             break
      
-    printer(inputNameForDisplay, lowestPrice, lowestOnKinguin, iwtrFinal)    
+    printer(lowestPrice, lowestOnKinguin, iwtrFinal)    
 
 def driver(inputName):                                             ### main driver
     inputNameForDisplay = inputName
@@ -339,7 +346,7 @@ def driver(inputName):                                             ### main driv
     
     soup1 = initialSoup(response)
     secondSoup = findGameID(soup1)
-    kinguinExtractor(soup1, secondSoup, inputNameForDisplay)
+    kinguinExtractor(soup1, secondSoup)
     
      ### actual main ###
 

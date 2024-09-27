@@ -5,6 +5,8 @@ import os
 import roman
 from googlesearch import search
 
+globalName = ''
+
 def basicFormatting (gameName):
     gameName = gameName.replace(':','')
     gameName = gameName.replace('-','')
@@ -167,13 +169,18 @@ def makeRequest (gameName):
 def makeSoup(response,inputNameForDisplay):
     soup = BeautifulSoup(response.text, 'lxml')
 
+    for data in soup.findAll('a',{'class':'game-info-title title no-icons'}):
+     global globalName
+     globalName = data.text
+     break
+
     for data in soup.findAll('span',{'class':'price-inner numeric'}):
         if('~' in data.text):
             lowest = data.text
             lowest = lowest.replace('~','')
-            print(inputNameForDisplay + ": " + lowest)
+            print(globalName + ": " + lowest)
             with open('results.txt','a') as f:
-                print(inputNameForDisplay + ": " + lowest, file = f)
+                print(globalName + ": " + lowest, file = f)
             break
         
 def driver(inputName):
