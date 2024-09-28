@@ -62,17 +62,22 @@ def formatName (gameName):                                 ### add dashes and co
     gameNameWithDashes = ''.join(splitted)
     return gameNameWithDashes
 
-def test1(gameName):                            ### Assassin's Creed to Assassin-s-Creed
+def test1(gameName):                            ### Assassins' Creed to Assassins Creed
+    gameName = gameName.replace("'","")
+    gameName = formatName(gameName)
+    return gameName
+
+def test2(gameName):                            ### Assassin's Creed to Assassin-s-Creed
     gameName = gameName.replace("'s"," s ")
     gameName = formatName(gameName)
     return gameName
 
-def test2(gameName):                            ### Assassin's Creed to Assassins Creed
+def test3(gameName):                            ### Assassin's Creed to Assassins Creed
     gameName = gameName.replace("'s","s")
     gameName = formatName(gameName)
     return gameName
 
-def test3(gameName):                            ### The Darkness II to The Darkness 2
+def test4(gameName):                            ### The Darkness II to The Darkness 2
     gameNameList = gameName.split()
     testStr = "Hello"
 
@@ -115,7 +120,7 @@ def test3(gameName):                            ### The Darkness II to The Darkn
     gameName = formatName(gameName)
     return gameName
 
-def test4(gameName):                            ### Dark Souls 3 to Dark Souls III
+def test5(gameName):                            ### Dark Souls 3 to Dark Souls III
     gameNameList = gameName.split()
 
     testInt = 0
@@ -154,7 +159,7 @@ def test4(gameName):                            ### Dark Souls 3 to Dark Souls I
     gameName = formatName (gameName)
     return gameName
 
-def test5(gameName):                             ### search on google, make request is inside, returns response
+def test6(gameName):                             ### search on google, make request is inside, returns response
     query = gameName + " site: gg.deals"
     try:
         result = search(query, 1)
@@ -165,7 +170,7 @@ def test5(gameName):                             ### search on google, make requ
         print(f"Exception occured while searching on Google: {e}")
         return
 
-def test6(gameName):                             ### gg.deals native search
+def test7(gameName):                             ### gg.deals native search
     url = "https://gg.deals/search/?title=" + gameName
     response = requests.get(url, timeout=10)
     soup = BeautifulSoup(response.text, 'lxml')
@@ -193,11 +198,14 @@ def makeRequest (gameName):
 def initialSoup (response):                      #required for getting gameID mainly, is also finding game name for displaying
     soup = BeautifulSoup(response.text, 'lxml')
     
-    for data in soup.findAll('a',{'class':'game-info-title title no-icons'}):
-        global globalName
-        globalName = data.text
-        break
-    
+    for value in soup.findAll('a',{'class':'active'}):
+       tempName = value.text
+       break
+ 
+    tempName = os.linesep.join([s for s in tempName.splitlines() if s])
+    global globalName
+    globalName = tempName
+ 
     return soup
 
 def findGameID (soup1):                        #finding gameID for post request, (POST for the load more option, to get to kinguin if it is hidden below load more options)
@@ -302,12 +310,13 @@ def printer(lowestPrice, lowestOnKinguin, iwtrFinal):          ## printing all o
 
 def final(soup1, lowestOnKinguin, iwtrFinal):      ## finds lowest price overall, and passes to print function everything
     lowestPrice = ''
+    result = soup1.findAll('span',{'class':'price-inner numeric'})[1].text
 
-    for data in soup1.findAll('span',{'class':'price-inner numeric'}):
-        if('~' in data.text):
-            lowestPrice = data.text
+    if('~' in result):
+            lowestPrice = result
             lowestPrice = lowestPrice.replace('~','')
-            break
+    else:
+        lowestPrice = result    
      
     printer(lowestPrice, lowestOnKinguin, iwtrFinal)    
 
@@ -320,25 +329,27 @@ def driver(inputName):                                             ### main driv
     
     response = makeRequest(inputNameFormatted)
     
-    if (response.status_code == 404 and "'s" in inputName):
+    if (response.status_code == 404 and "'" in inputName):
         response = makeRequest(test1(inputName))
-        if (response.status_code == 404):
-            response = makeRequest(test2(inputName))
-            
-    test3Result = test3(inputName)
-    if(response.status_code == 404 and test3Result != ''):
-        response = makeRequest(test3Result)
     
+    if (response.status_code == 404 and "'s" in inputName):
+            response = makeRequest(test2(inputName))
+            if (response.status_code == 404):
+                response = makeRequest(test3(inputName))
+            
     test4Result = test4(inputName)
-    if (response.status_code == 404 and test4Result != ''):
+    if(response.status_code == 404 and test4Result != ''):
         response = makeRequest(test4Result)
     
+    test5Result = test5(inputName)
+    if (response.status_code == 404 and test5Result != ''):
+        response = makeRequest(test5Result)
     
     if not response or response.status_code == 404:
         try:
-         response = test5(inputNameForDisplay)
+         response = test6(inputNameForDisplay)
         except:
-            response = test6(inputNameForDisplay)
+            response = test7(inputNameForDisplay)
             
     if not response or response.status_code == 404:
             print("All tries to search for the game have failed. ")
