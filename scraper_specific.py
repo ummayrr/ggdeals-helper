@@ -80,23 +80,21 @@ def test3(gameName):                            ### Assassin's Creed to Assassin
 def test4(gameName):                            ### The Darkness II to The Darkness 2
     gameNameList = gameName.split()
     testStr = "Hello"
-
+    
     index = 0
 
     for i in range(len(gameNameList)):
         testStr = gameNameList[i]
-        if (
-            ((testStr[0] == 'I' or testStr[0] == 'i') and (testStr[-1] == 'I' or testStr[-1] == 'i')) or
-            ((testStr[0] == 'I' or testStr[0] == 'i') and (testStr[-1] == 'X' or testStr[-1] == 'x')) or
-            (testStr.lower() == 'x') or
-            (testStr[0] == 'I' or testStr[0] == 'i') or
-            (testStr[-1] == 'V' or testStr[-1] == 'v') or
-            ((testStr[0] == 'X' or testStr[0] == 'x') and (testStr[-1] == 'V' or testStr[-1] == 'v')) or
-            ((testStr[0] == 'X' or testStr[0] == 'x') and (testStr[-1] == 'I' or testStr[-1] == 'i'))
-        ):
+        testStr = testStr.lower() 
+        
+        validRomans = [
+          'i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 
+          'ix', 'x', 'xi', 'xii', 'xiii', 'xiv', 'xv', 
+          'xvi', 'xvii', 'xviii', 'xix', 'xx','xxi','xxii','xxiii','xxiv','xxv','xxvi','xxvii','xxviii','xxix','xxx']
+        
+        if testStr in validRomans:
             index = i
             break
-
 
     count = 0
 
@@ -336,14 +334,16 @@ def driver(inputName):                                             ### main driv
             response = makeRequest(test2(inputName))
             if (response.status_code == 404):
                 response = makeRequest(test3(inputName))
-            
+
     test4Result = test4(inputName)
     if(response.status_code == 404 and test4Result != ''):
-        response = makeRequest(test4Result)
-    
+           response = makeRequest(test4Result)
+  
     test5Result = test5(inputName)
     if (response.status_code == 404 and test5Result != ''):
-        response = makeRequest(test5Result)
+            response = makeRequest(test5Result)
+
+           
     
     if not response or response.status_code == 404:
         try:
@@ -362,7 +362,7 @@ def driver(inputName):                                             ### main driv
      ### actual main ###
 
 if(os.path.isfile('results.txt')):
- os.remove('results.txt')
+  os.remove('results.txt')
 
 with open('names.txt','r') as f:
    for line in f:
