@@ -202,42 +202,44 @@ def makeSoup(response, inputNameForDisplay):
         return
 
 def driver(inputName):
-    try:
-        inputNameForDisplay = inputName
-        inputName = basicFormatting(inputName)
-        inputNameFormatted = formatName(inputName)
+ try:
+    inputNameForDisplay = inputName
+    inputName = basicFormatting(inputName)
+    inputNameFormatted = formatName(inputName)
 
-        response = makeRequest(inputNameFormatted)
-
-        if response and response.status_code == 404 and "'" in inputName:
-            response = makeRequest(test1(inputName))
-
-        if response and response.status_code == 404 and "'s" in inputName:
+    response = makeRequest(inputNameFormatted)
+    
+    if (response.status_code == 404 and "'" in inputName):
+        response = makeRequest(test1(inputName))
+    
+    if (response.status_code == 404 and "'s" in inputName):
             response = makeRequest(test2(inputName))
-            if response and response.status_code == 404:
+            if (response.status_code == 404):
                 response = makeRequest(test3(inputName))
-
-        test4Result = test4(inputName)
-        if response and response.status_code == 404 and test4Result != '':
-            response = makeRequest(test4Result)
-
-        test5Result = test5(inputName)
-        if response and response.status_code == 404 and test5Result != '':
-            response = makeRequest(test5Result)
-
-        if not response or response.status_code == 404:
-            try:
-                response = test6(inputNameForDisplay)
-            except:
-                response = test7(inputNameForDisplay)
-
-        if not response or response.status_code == 404:
-            print(f"All tries failed for game: {inputNameForDisplay}")
+    
+    if not response or response.status_code == 404:
+     test4Result = test4(inputName)
+     if(test4Result != ''):
+           response = makeRequest(test4Result)
+  
+    if not response or response.status_code == 404:
+     test5Result = test5(inputName)
+     if (test5Result != ''):
+            response = makeRequest(test5Result)         
+    
+    if not response or response.status_code == 404:
+        try:
+         response = test6(inputNameForDisplay)
+        except:
+            response = test7(inputNameForDisplay)
+            
+    if not response or response.status_code == 404:
+            print("All tries to search for the game have failed. ")
             return
 
-        makeSoup(response, inputNameForDisplay)
+    makeSoup(response, inputNameForDisplay)
 
-    except Exception as e:
+ except Exception as e:
         print(f"Exception in driver for {inputNameForDisplay}: {e}")
         traceback.print_exc()
 
