@@ -159,14 +159,10 @@ def test5(gameName):                            ### Dark Souls 3 to Dark Souls I
 
 def test6(gameName):                             ### search on google, make request is inside, returns response
     query = gameName + " site: gg.deals"
-    try:
-        result = search(query, 1)
-        for i in result:
+    result = search(query, 1)
+    for i in result:
             response = requests.get(i, timeout=10)
             return response
-    except Exception as e:
-        print(f"Exception occured while searching on Google: {e}")
-        return
 
 def test7(gameName):                             ### gg.deals native search
     url = "https://gg.deals/search/?title=" + gameName
