@@ -1,7 +1,7 @@
 beautifulsoup4
 requests
 lxml
-dotenv
+python-dotenv
 CurrencyConverter
 googlesearch-python
 roman
